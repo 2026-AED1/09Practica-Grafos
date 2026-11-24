@@ -5,8 +5,18 @@
 Cada clase de test corresponde a un ejercicio; puedes lanzar solo una:
 
     python -m unittest -v test_red_social.TestEjercicio1
+    python -m unittest -v test_red_social.TestEjercicio2
+    python -m unittest -v test_red_social.TestEjercicio3
+    python -m unittest -v test_red_social.TestEjercicioExtra
+
+Al ejecutarlos, cada ejercicio sale con su cabecera y cada test indica a qué
+ejercicio pertenece, por ejemplo:
+
+    ======== Ejercicio 1: construir la red ========
+    [Ej. 1] tamano_y_grados ... ok
 """
 
+import sys
 import time
 import unittest
 
@@ -20,7 +30,32 @@ def cadena_larga(n):
     return RedSocial(personas, amistades)
 
 
-class TestEjercicio1(unittest.TestCase):
+class _TestDeEjercicio(unittest.TestCase):
+    """Base común: escribe la cabecera del ejercicio y pone delante de cada
+    test su etiqueta, tanto en la lista de resultados como en los fallos."""
+
+    ETIQUETA = ""   # por ejemplo, "Ej. 1"
+    TITULO = ""     # por ejemplo, "Ejercicio 1: construir la red"
+
+    @classmethod
+    def setUpClass(cls):
+        # unittest escribe sus resultados en stderr: la cabecera va al mismo
+        # sitio para que salga en orden.
+        sys.stderr.write(f"\n======== {cls.TITULO} ========\n")
+        sys.stderr.flush()
+
+    def __str__(self):
+        nombre = self._testMethodName[len("test_"):]   # quita el "test_" del principio
+        return f"[{self.ETIQUETA}] {nombre}"
+
+    def shortDescription(self):
+        return None   # que no añada una segunda línea con el docstring
+
+
+class TestEjercicio1(_TestDeEjercicio):
+    ETIQUETA = "Ej. 1"
+    TITULO = "Ejercicio 1: construir la red"
+
     def test_tamano_y_grados(self):
         r = red_de_ejemplo()
         self.assertEqual(r.num_personas(), 11)
@@ -79,7 +114,10 @@ class TestEjercicio1(unittest.TestCase):
                 self.assertIn(p, r.amigos(q))
 
 
-class TestEjercicio2(unittest.TestCase):
+class TestEjercicio2(_TestDeEjercicio):
+    ETIQUETA = "Ej. 2"
+    TITULO = "Ejercicio 2: los grupos"
+
     def test_etiquetas(self):
         r = red_de_ejemplo()
         self.assertEqual(r.etiquetas_de_grupo(), [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2])
@@ -118,7 +156,10 @@ class TestEjercicio2(unittest.TestCase):
         self.assertEqual(len(g[0]), 100_000)
 
 
-class TestEjercicio3(unittest.TestCase):
+class TestEjercicio3(_TestDeEjercicio):
+    ETIQUETA = "Ej. 3"
+    TITULO = "Ejercicio 3: grados de separación"
+
     def test_separacion(self):
         r = red_de_ejemplo()
         self.assertEqual(r.separacion("Ana", "Ana"), 0)
@@ -169,11 +210,14 @@ class TestEjercicio3(unittest.TestCase):
                           [(f"p{(i - 1) // 2}", f"p{i}") for i in range(1, n)])
         inicio = time.perf_counter()
         self.assertEqual(arbol.separacion("p0", f"p{n - 1}"), 16)
-        print(f"\n    BFS en un árbol de {n} personas: "
-              f"{1000 * (time.perf_counter() - inicio):.0f} ms", end=" ")
+        print(f"({1000 * (time.perf_counter() - inicio):.0f} ms el BFS en un "
+              f"árbol de {n} personas)", end=" ", file=sys.stderr)
 
 
-class TestEjercicioExtra(unittest.TestCase):
+class TestEjercicioExtra(_TestDeEjercicio):
+    ETIQUETA = "Extra"
+    TITULO = "Ejercicio extra: personas que quizá conozcas"
+
     def test_sugerencias_ejemplo(self):
         r = red_de_ejemplo()
         self.assertEqual(r.sugerencias("Ana"), [("David", 2), ("Elena", 1)])
